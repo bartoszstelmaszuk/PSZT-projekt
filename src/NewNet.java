@@ -41,6 +41,22 @@ NewNet(Vector<Point3> cl, Vector<Point3> cr){
 	clicsSec=cr;
 }
 
+public synchronized Vector<Point3> getAprksymation(int length, int step, int var){
+	Vector<Point3> line=new Vector<Point3>();
+		if(var==0){
+			if(step<1) step=1;
+			
+			for(int i=0; i<length; i=i+step){
+				line.add(new Point3((double)i, 0.0));
+				line.get(i).SetYZ(getY(i));
+			}
+		}else if(var==2){
+			mixup();
+		}
+		
+		return line;
+}
+
 Point3 getY(int x){ 
 			
 			Vector<Double> out;
@@ -218,9 +234,9 @@ void mixup(){
 @Override
 public void run() {
 	while (true){
-		mixup();
+		getAprksymation(0, 0, 2);
 		try {
-			TimeUnit.MILLISECONDS.sleep(2000);
+			TimeUnit.MILLISECONDS.sleep(200);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
