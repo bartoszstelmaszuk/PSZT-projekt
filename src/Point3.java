@@ -22,4 +22,9 @@ public class Point3 {
 		y=b;
 		z=0;
 	}
+	
+	void SetYZ(Point3 point){
+		y=point.x;
+		z=point.y;
+	}
 }
