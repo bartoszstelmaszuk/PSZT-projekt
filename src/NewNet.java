@@ -1,11 +1,13 @@
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 
-public class NewNet {
+public class NewNet implements Runnable{
 		Vector<Layer> web;
 		double abberation;
 		double avr_abberation;
 		private Vector<Point3> clics;
+		private Vector<Point3> clicsSec;
 
 /*NewNet(){
 	web=new Vector<Layer>();
@@ -17,18 +19,30 @@ public class NewNet {
 	
 	clics= new Vector<Point3>();
 }*/
-NewNet(Vector<Point3> cl){
+		
+NewNet(Vector<Integer> layerDescr, Vector<Point3> cl, Vector<Point3> cr){
+	web=new Vector<Layer>();
+	int inp=1;
+	for(int i=0; i<layerDescr.size();i++){
+		web.add(new Layer(layerDescr.get(i), inp));
+		inp=layerDescr.get(i);
+	}
+	
+	clics= cl;
+	clicsSec=cr;
+}		
+NewNet(Vector<Point3> cl, Vector<Point3> cr){
 	web=new Vector<Layer>();
 	web.add(new Layer(30, 1));
 	web.add(new Layer(20, 30));
 	web.add(new Layer(20, 20));
-	web.add(new Layer(1, 20));
+	web.add(new Layer(2, 20));
 	clics= cl;
+	clicsSec=cr;
 }
 
-double getY(int x){ 
-			double sum=0;
-			double suma=0;
+Point3 getY(int x){ 
+			
 			Vector<Double> out;
 			Vector<Double> in=new Vector<Double>();
 			in.clear();
@@ -54,12 +68,21 @@ double getY(int x){
 			}
 			
 				out=web.lastElement().calulateLayer(in);
-				for(int j=0; j<out.size(); j++){
-					suma+=out.get(j);
+				double sumaY1=0;
+				double sumaY2=0;
+				if(out.size()==2){
+					sumaY1=out.get(0);
+					sumaY2=out.get(1);
+					
+				}else{
+					for(int j=0; j<out.size(); j++){
+						sumaY1+=out.get(j);
+						sumaY2+=out.get(j);
+					}
 				}
-			
-			//System.out.println(sum);*/
-			return suma;
+				
+			Point3 ret=new Point3(sumaY1, sumaY2);
+			return ret;
 }
 void addLearningPoint(Point3 p){
 	clics.add(p);
@@ -68,15 +91,18 @@ void countError(){
 	abberation=0.0;
 	if(clics.size()>0){
 		//System.out.println("_________________________________");
-		
+		Point3 val;
+		double e, f;
 		for(int i=0; i< clics.size(); i++){
-			double e=Math.abs(clics.get(i).y-getY((int)clics.get(i).x));
-			abberation+=e*e;
-			//String s=Double.toString(clics.get(i).y)+"+"+Double.toString(getY((int)clics.get(i).x))+"="+Double.toString(e);
-			//double s=getY((int)clics.get(i).x);
-		//	System.out.println(s);
+			val=getY((int)clics.get(i).x);
+			e=Math.abs(clics.get(i).y-val.x);
+			if(i<clicsSec.size()){
+				f=Math.abs(clicsSec.get(i).y-val.y);
+			}else{f=0;}
+			abberation+=e*e+f*f;
+	
 		}
-		avr_abberation=abberation/clics.size();
+		avr_abberation=abberation/(clics.size()+clicsSec.size());
 	}
 	
 }
@@ -187,5 +213,19 @@ void mixup(){
 		}
 	
 	}
+}
+
+@Override
+public void run() {
+	while (true){
+		mixup();
+		try {
+			TimeUnit.MILLISECONDS.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 }
 }
