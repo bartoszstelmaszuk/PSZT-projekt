@@ -6,6 +6,11 @@ public class Point3 {
 	public double y;
 	public double z;
 	
+	Point3(Point3 point){
+		x=point.x;
+		y=point.y;
+		z=point.z;
+	}
 	
 	Point3(double a, double b, double c){
 		x=a;

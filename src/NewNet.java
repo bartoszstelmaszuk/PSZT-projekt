@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
@@ -5,9 +6,13 @@ import java.util.concurrent.TimeUnit;
 public class NewNet implements Runnable{
 		Vector<Layer> web;
 		double abberation;
+		double abberationRed;
+		double abberationBlue;
 		double avr_abberation;
 		private Vector<Point3> clics;
 		private Vector<Point3> clicsSec;
+		private double  delta=0.05;
+		private double del=0.05;
 
 /*NewNet(){
 	web=new Vector<Layer>();
@@ -33,8 +38,8 @@ NewNet(Vector<Integer> layerDescr, Vector<Point3> cl, Vector<Point3> cr){
 }		
 NewNet(Vector<Point3> cl, Vector<Point3> cr){
 	web=new Vector<Layer>();
-	web.add(new Layer(30, 1));
-	web.add(new Layer(20, 30));
+	web.add(new Layer(20, 1));
+	//web.add(new Layer(20, 30));
 	web.add(new Layer(20, 20));
 	web.add(new Layer(2, 20));
 	clics= cl;
@@ -47,11 +52,15 @@ public synchronized Vector<Point3> getAprksymation(int length, int step, int var
 			if(step<1) step=1;
 			
 			for(int i=0; i<length; i=i+step){
-				line.add(new Point3((double)i, 0.0));
-				line.get(i).SetYZ(getY(i));
+				line.add(new Point3(i, 0,0));
+				line.lastElement().SetYZ(getY(i));
+				
+			//	line.add((getY(i)));
+			
 			}
 		}else if(var==2){
-			mixup();
+			newMixup();
+		//	mixup();
 		}
 		
 		return line;
@@ -83,7 +92,8 @@ Point3 getY(int x){
 			
 			}
 			
-				out=web.lastElement().calulateLayer(in);
+			
+				out=web.lastElement().calulateLayerLinear(in);
 				double sumaY1=0;
 				double sumaY2=0;
 				if(out.size()==2){
@@ -98,6 +108,8 @@ Point3 getY(int x){
 				}
 				
 			Point3 ret=new Point3(sumaY1, sumaY2);
+			
+		
 			return ret;
 }
 void addLearningPoint(Point3 p){
@@ -105,6 +117,8 @@ void addLearningPoint(Point3 p){
 }
 void countError(){
 	abberation=0.0;
+	abberationRed=0.0;
+	abberationBlue=0.0;
 	if(clics.size()>0){
 		//System.out.println("_________________________________");
 		Point3 val;
@@ -116,6 +130,8 @@ void countError(){
 				f=Math.abs(clicsSec.get(i).y-val.y);
 			}else{f=0;}
 			abberation+=e*e+f*f;
+			abberationBlue+=e*e;
+			abberationRed+=f*f;
 	
 		}
 		avr_abberation=abberation/(clics.size()+clicsSec.size());
@@ -132,6 +148,74 @@ double getWeigth(Vector<Vector<Vector<Double>>> we, int a, int b, int c){
 		return 0.0;
 	}
 }
+
+double deltaJ(Point3 point){
+	double value=0.0;
+	Point3 pointA=getY((int)point.x);
+	Point3 pointB=getY((int)(point.x+delta));
+	value = (pointB.y-point.y)-(pointA.y-point.y)+(pointB.z-point.z)-(pointA.z-point.z);
+	return value;
+}
+double getF(Neuron x){
+	return x.output;
+}
+double getdF(Neuron x){
+	return (getF(x)*(1-getF(x)));
+}
+void newMixup(){
+	 Random randomGenerator = new Random();
+	
+	 if(clicsSec.size()>0 ){
+		 int w=Math.abs(randomGenerator.nextInt()% clicsSec.size());
+		
+		Point3 point=new Point3(clics.get(w).x,clics.get(w).y,clicsSec.get(w).y);
+		getY((int)point.x);
+		Vector<Vector<Vector<Double>>> we=new Vector<Vector<Vector<Double>>>();
+		for(int i=0; i<web.size(); i++){
+			we.add(web.get(i).getLayerWeigthsVectors());
+		}
+		countError();
+		double dJ =abberation;
+		double n=0.000001;
+		Vector<Double> gamma_old=new Vector<Double>();
+		Vector<Double> gamma_new=new Vector<Double>();
+		gamma_new.add(abberationBlue);
+		gamma_new.add(abberationRed);
+		
+		for(int i=web.size()-1; i>=0; i--){
+			for(int j=0;j<web.get(i).size(); j++){
+				double dF=getdF(web.get(i).line.get(j));
+					if(i<web.size()-1){
+						double weigthSum=0.0;
+						for(int l=0; l<gamma_old.size(); l++){
+							weigthSum+=web.get(i+1).line.get(l).weigth.get(j)*gamma_old.get(l);
+						}
+						gamma_new.add(weigthSum);
+					}
+				for(int k=0; k<web.get(i).layerNuronSize(j); k++){
+					double weigth=getWeigth(we, i, j, k);
+					
+					if(k<web.get(i).layerNuronSize(j)-1){
+						double in=web.get(i).line.get(j).input.get(k);
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*dF*gamma_new.lastElement()*in);
+					}else{
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*dF*gamma_new.lastElement()*1);
+					}
+				}
+				
+			}
+			gamma_old=(Vector<Double>) gamma_new.clone();
+			gamma_new.clear();
+		}
+		
+		 
+		countError();
+		System.out.println(Double.toString(abberation)+"  "+Double.toString(abberationBlue)+"  "+Double.toString(abberationRed));
+	 }
+}
+
+
+
 void mixup(){
 		countError();
 	if(clics.size()>0){
@@ -142,7 +226,7 @@ void mixup(){
 			}
 		int tmp;
 		int var=0;
-		for(int z=0; z<10; z++){
+		for(int z=0; z<1; z++){
 			tmp=0;
 			for(int i=0; i<web.size(); i++){
 				for(int j=0;j<web.get(i).size(); j++){
@@ -151,7 +235,7 @@ void mixup(){
 						double abb=abberation;
 						double weigth=getWeigth(we, i, j, k);
 						if (web.get(i).line.get(j).getNeuronDir()==0){
-							web.get(i).setLayerINeuronWeigthJ(j, k, weigth+0.2);
+							web.get(i).setLayerINeuronWeigthJ(j, k, weigth+del);
 							countError();
 					
 							if(abb>abberation){
@@ -163,7 +247,7 @@ void mixup(){
 							//	--k;
 								continue;
 							}
-							web.get(i).setLayerINeuronWeigthJ(j, k, (weigth-0.2));
+							web.get(i).setLayerINeuronWeigthJ(j, k, (weigth-del));
 							countError();
 					
 							if(abb>abberation){
@@ -184,7 +268,7 @@ void mixup(){
 							}
 						}else{
 							
-							web.get(i).setLayerINeuronWeigthJ(j, k, (weigth-0.2));
+							web.get(i).setLayerINeuronWeigthJ(j, k, (weigth-del));
 							countError();
 					
 							if(abb>abberation){
@@ -199,7 +283,7 @@ void mixup(){
 							
 							
 							
-							web.get(i).setLayerINeuronWeigthJ(j, k, weigth+0.2);
+							web.get(i).setLayerINeuronWeigthJ(j, k, weigth+del);
 							countError();
 					
 							if(abb>abberation){
@@ -236,7 +320,7 @@ public void run() {
 	while (true){
 		getAprksymation(0, 0, 2);
 		try {
-			TimeUnit.MILLISECONDS.sleep(200);
+		TimeUnit.MILLISECONDS.sleep(30);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

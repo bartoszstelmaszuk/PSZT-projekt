@@ -29,7 +29,7 @@ public class Graph extends JPanel implements ActionListener, MouseListener{
 		network=new NewNet(webConf,clicsF, clicsS);
 		 Thread t = new Thread(network, "My Thread");
 		 t.start();
-		 timer=new Timer(100, this);
+		 timer=new Timer(33, this);
 		 timer.start();
 		//network2=new NewNet(clicsS, clicsF);
 	}
@@ -42,7 +42,7 @@ public class Graph extends JPanel implements ActionListener, MouseListener{
 			drawCircle(g, (int)clicsS.get(i).x, (int)clicsS.get(i).y, Color.RED);
 		}
 		//network.mixup();
-		Vector<Point3> line =network.getAprksymation(this.getWidth(), 1, 0);
+		Vector<Point3> line =network.getAprksymation(this.getWidth(), 10, 0);
 		for(int i=0; ((i<line.size()-1) &&line.size()>1) ; i++){
 			g.setColor(Color.BLUE);
 			g.drawLine((int)line.get(i).x, (int)line.get(i).y,
@@ -51,6 +51,7 @@ public class Graph extends JPanel implements ActionListener, MouseListener{
 			g.drawLine((int)line.get(i).x, (int)line.get(i).z, 
 					(int)line.get(i+1).x, (int)(int)line.get(i+1).z);
 		}
+		
 		/*
 		Vector<Point3> lineFirst=new Vector<Point3>();
 		Vector<Point3> lineSecond=new Vector<Point3>();
@@ -69,8 +70,8 @@ public class Graph extends JPanel implements ActionListener, MouseListener{
 					(int)lineSecond.get(i+1).x, (int)(int)lineSecond.get(i+1).y);
 		}*/
 		
-		System.out.println("Błąd średni"+Double.toString(network.avr_abberation)+" Błąd absolutny "
-				+Double.toString(network.abberation));
+	//	System.out.println("Błąd średni"+Double.toString(network.avr_abberation)+" Błąd absolutny "
+		//		+Double.toString(network.abberation));
 		
 	}
 	@Override
@@ -113,9 +114,9 @@ public class Graph extends JPanel implements ActionListener, MouseListener{
 	}
 	
 	public void drawCircle(Graphics g, int x, int y, Color c) {
-        g.drawOval(x, y, 4, 4);
-        g.setColor(c);
-        g.fillOval(x, y, 4, 4);
+		g.setColor(c);
+		g.drawOval(x-2, y-2, 4, 4);
+        g.fillOval(x-2, y-2, 4, 4);
     }
 	
 

@@ -3,22 +3,7 @@ import java.util.Vector;
 
 public class Layer {
 	Vector<Neuron> line;
-	//Vector<Double> input;
-/*	Layer(int count){
-		line= new Vector<Neuron>();
-		for(int j=0; j<count; j++){
-			line.add(new Neuron());
-		}
-	}*/
-	
-/*	Layer(int count, Vector<Double> i ){
-		line= new Vector<Neuron>();{
-			for(int j=0; j<count; j++){
-				line.add(new Neuron());
-			}
-		}
-		input =i;
-	}*/
+
 	
 	Layer(int count, int i ){
 		line= new Vector<Neuron>();
@@ -27,19 +12,21 @@ public class Layer {
 			}
 	}
 	
-	/*Vector<Double> calulateLayer(int x){
+
+	public Vector<Double> calulateLayer(Vector<Double> x){
 		Vector<Double> out=new Vector<Double>();
 		for(int i=0; i<line.size(); i++){
 		
 			out.add( line.get(i).countY(x));
 		}
 		return out;
-	}*/
-	public Vector<Double> calulateLayer(Vector<Double> x){
+	}
+	
+	public Vector<Double> calulateLayerLinear(Vector<Double> x){
 		Vector<Double> out=new Vector<Double>();
 		for(int i=0; i<line.size(); i++){
 		
-			out.add( line.get(i).countY(x));
+			out.add( line.get(i).countLinear(x));
 		}
 		return out;
 	}
@@ -52,14 +39,11 @@ public class Layer {
 			return var;
 	}
 	int size(){return line.size();}
-	int layerNuronSize(int i){return line.get(i).neuronSize();}
+	int layerNuronSize(int i){return line.get(i).weigth.size();}
 	void setLayerINeuronWeigthJ(int i, int j, double w){ 
 			if(i<line.size()){
-				if(j<line.get(i).neuronSize()){
-				//	System.out.println("layerNuronSize"+Integer.toString(i)+" "+Integer.toString(j)+" "+Double.toString(w));
-				//	System.out.println(line.get(i).weigth.get(j));
+				if(j<line.get(i).weigth.size()){
 					line.get(i).weigth.set(j, w);
-				//	System.out.println(line.get(i).weigth.get(j));
 				}else {System.out.println("Error in Layer setLayerINeuronWeigthJ - out of range in weigth size");}
 			}else {System.out.println("Error in Layer setLayerINeuronWeigthJ - out of range in line size");}
 		}
