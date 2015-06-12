@@ -70,9 +70,7 @@ public class Graph extends JPanel implements ActionListener, MouseListener{
 					(int)lineSecond.get(i+1).x, (int)(int)lineSecond.get(i+1).y);
 		}*/
 		
-	//	System.out.println("Błąd średni"+Double.toString(network.avr_abberation)+" Błąd absolutny "
-		//		+Double.toString(network.abberation));
-		
+	
 	}
 	@Override
 	public void mouseClicked(MouseEvent arg0) {

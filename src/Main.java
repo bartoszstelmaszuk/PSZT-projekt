@@ -8,7 +8,7 @@ public class Main {
 
 	/**
 	 * @param args
-	 */
+	 
 	static JFrame frame;
 	static Graph graph;
 	public static void main(String[] args) {
@@ -16,7 +16,7 @@ public class Main {
 		frame=new JFrame();
 		frame.setBounds(0,0,768, 1000);
 		frame.setVisible(true);
-		/* Wektor tworzący struktórę sieci neuronowej*/
+		
 		Vector<Integer> webConfig = new Vector<Integer>();
 		webConfig.add(10);
 		webConfig.add(20);
@@ -32,5 +32,5 @@ public class Main {
 		
 		
 	}
-
+	*/
 }
