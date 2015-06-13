@@ -13,7 +13,6 @@ import javax.swing.JLabel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
-import com.jgoodies.forms.factories.DefaultComponentFactory;
 
 public class GUIMenu {
 
@@ -79,8 +78,8 @@ public class GUIMenu {
 		lblNewLabel.setBounds(29, 98, 309, 16);
 		frame.getContentPane().add(lblNewLabel);
 		
-		JLabel lblPsztSie = DefaultComponentFactory.getInstance().createTitle("PSZT - Sieć neuronowa");
-		lblPsztSie.setBounds(147, 6, 164, 16);
+		JLabel lblPsztSie = new JLabel("PSZT - Sieć Neuronowa");
+		lblPsztSie.setBounds(148, 6, 146, 16);
 		frame.getContentPane().add(lblPsztSie);
 		
 	}

@@ -12,18 +12,23 @@ public class Simulation extends JFrame {
 	private JPanel contentPane;
 	static Graph graph;
 
-	public Simulation(Vector <Integer> netData) {
+	/**
+	 * Create the frame.
+	 */
+	public Simulation(Vector<Integer> netData) {
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(0, 0, 768, 1000);
+		setBounds(0, 0, 800, 800);
 		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(0, 0, 768, 1000));
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		
 		graph=new Graph(netData); 
-		graph.setBounds(0, 0,768, 1000);
+		graph.setBounds(0, 0,this.getWidth(), this.getHeight());
 		add(graph);
 	}
 
 }
+
+

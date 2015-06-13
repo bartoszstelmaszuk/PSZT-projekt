@@ -17,25 +17,7 @@ public class NetSpecification extends JFrame {
 	private JPanel contentPane;
 	private JTextField textField;
 
-	/**
-	 * Launch the application.
-	 
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					NetSpecification frame = new NetSpecification();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
-	
-	 * Create the frame.
-	 */
 	public NetSpecification(final Vector<Integer> netData) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -46,7 +28,7 @@ public class NetSpecification extends JFrame {
 		
 		int netNr = netData.size()+1;
 		JLabel lblNewLabel = new JLabel("Nr warstwy - " + netNr);
-		lblNewLabel.setBounds(69, 38, 124, 16);
+		lblNewLabel.setBounds(125, 21, 231, 16);
 		contentPane.add(lblNewLabel);
 		
 		JButton btnNewButton = new JButton("Dodaj warstwę");
@@ -79,12 +61,28 @@ public class NetSpecification extends JFrame {
 		contentPane.add(btnZakoczIPrzejd);
 		
 		textField = new JTextField();
-		textField.setBounds(283, 88, 134, 28);
+		textField.setBounds(306, 119, 80, 28);
 		contentPane.add(textField);
 		textField.setColumns(10);
 		
 		JLabel lblWybierzLiczbeNeuronw = new JLabel("Wybierz liczbe neuronów w warstwie:");
-		lblWybierzLiczbeNeuronw.setBounds(23, 94, 248, 16);
+		lblWybierzLiczbeNeuronw.setBounds(23, 125, 248, 16);
 		contentPane.add(lblWybierzLiczbeNeuronw);
+		
+		JLabel lblWektorNeuronwW = new JLabel("Wektor neuronów w poszczególnych warstwach sieci:");
+		lblWektorNeuronwW.setBounds(16, 49, 357, 28);
+		contentPane.add(lblWektorNeuronwW);
+		
+		String netDataDupl= new String();
+		netDataDupl="<";
+		for (int i=0; i<netData.size(); i++)
+		{
+			netDataDupl+=netData.elementAt(i);
+			if(i!= netData.size()-1)	netDataDupl+=", ";
+		}
+		netDataDupl+=">";
+		JLabel lblNewLabel_1 = new JLabel(netDataDupl);
+		lblNewLabel_1.setBounds(23, 89, 376, 16);
+		contentPane.add(lblNewLabel_1);
 	}
 }
