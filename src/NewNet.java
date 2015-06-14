@@ -190,16 +190,16 @@ void newMixup(){
 						for(int l=0; l<gamma_old.size(); l++){
 							weigthSum+=web.get(i+1).line.get(l).weigth.get(j)*gamma_old.get(l);
 						}
-						gamma_new.add(weigthSum);
+						gamma_new.add(weigthSum*dF);
 					}
 				for(int k=0; k<web.get(i).layerNuronSize(j); k++){
 					double weigth=getWeigth(we, i, j, k);
 					
 					if(k<web.get(i).layerNuronSize(j)-1){
 						double in=web.get(i).line.get(j).input.get(k);
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*dF*gamma_new.lastElement()*in);
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*gamma_new.lastElement()*in);
 					}else{
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*dF*gamma_new.lastElement()*1);
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*gamma_new.lastElement()*1);
 					}
 				}
 				
