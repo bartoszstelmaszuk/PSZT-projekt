@@ -50,6 +50,7 @@ public class NetSpecification extends JFrame {
 		JButton btnZakoczIPrzejd = new JButton("Rozpoczni symulacje");
 		btnZakoczIPrzejd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				netData.add(2);
 				dispose();
 				Simulation simul = new Simulation(netData);
 				simul.setVisible(true);
