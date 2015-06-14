@@ -11,8 +11,8 @@ public class NewNet implements Runnable{
 		double avr_abberation;
 		private Vector<Point3> clics;
 		private Vector<Point3> clicsSec;
-		private double  delta=0.05;
-		private double del=0.05;
+		private double  delta=0.01;
+		private double del=0.1;
 
 		
 NewNet(Vector<Integer> layerDescr, Vector<Point3> cl, Vector<Point3> cr){
@@ -49,9 +49,9 @@ public synchronized Vector<Point3> getAprksymation(int length, int step, int var
 			
 			}
 		}else if(var==2){
-			newMixup();
-		//	mixup();
-		//	backProps();
+		//	newMixup();
+			mixup();
+		//grad();
 		}
 		
 		return line;
@@ -84,7 +84,8 @@ Point3 getY(int x){
 			}
 			
 			
-				out=web.lastElement().calulateLayerLinear(in);
+				out=web.lastElement().calulateLayer(in);
+				//out=web.lastElement().calulateLayerLinear(in);
 				double sumaY1=0;
 				double sumaY2=0;
 				if(out.size()==2){
@@ -153,17 +154,23 @@ Point3 errorJ(Vector<Point3> point){
 	Point3 ret=new Point3(0.0,0.0,0.0);
 	for(int i=0; i<point.size(); i++){
 		Point3 value=getY((int)point.get(i).x);
-		ret.y+=(point.get(i).y-value.x);
-		ret.z+=(point.get(i).z-value.y);
+		
+	//	ret.y+=(point.get(i).y-value.x);
+	//	ret.z+=(point.get(i).z-value.y);
+		ret.y+=(point.get(i).y-value.x)*(point.get(i).y-value.x);
+		ret.z+=(point.get(i).z-value.y)*(point.get(i).z-value.y);
 	}
+	ret.x=ret.y+ret.z;
 	return ret;
 }
 double getF(Neuron x){
 	return x.output;
 }
+
 double getdF(Neuron x){
 	return (getF(x)*(1-getF(x)));
 }
+
 void backProps(){
 	Vector<Double> gamma_old=new Vector<Double>();
 	Vector<Double> gamma_new=new Vector<Double>();
@@ -182,6 +189,7 @@ void backProps(){
 		double dJr =point.z-value.z;
 	 }
 }
+
 void newMixup(){
 	 Random randomGenerator = new Random();
 	
@@ -196,8 +204,110 @@ void newMixup(){
 		 
 		 
 		Vector<Point3> select=new Vector<Point3>();
-		//int size=(int)(clicsSec.size()*0.7);
+		//int size=(int)(clicsSec.size());
 		int size=1;
+		//for(int i=0; i<size; i++){
+			int w=Math.abs(randomGenerator.nextInt()% clicsSec.size());
+			Point3 point=new Point3(clics.get(w).x,clics.get(w).y,clicsSec.get(w).y);
+		//	if(select.contains(point)){
+		//		i--;
+		//	}else{
+				select.add(point);
+		//	}
+		//}
+		
+		Point3 value=errorJ(select);
+		
+		double dJb =value.y;
+		double dJr =value.z;
+	//	System.out.println( dJb);
+	//	System.out.println( dJr);
+		double n=0.01;
+		Vector<Double> gamma_old=new Vector<Double>();
+		Vector<Double> gamma_new=new Vector<Double>();
+		gamma_new.add(dJb);
+		gamma_new.add(dJr);//pomnożyć razy pochodną
+		
+		for(int i=web.size()-1; i>=0; i--){
+			for(int j=0;j<web.get(i).size(); j++){
+				double dF=getdF(web.get(i).line.get(j));
+			//	dF=(web.get(i).line.get(j).getdF());
+					if(i<web.size()-1){
+						double weigthSum=0.0;
+						for(int l=0; l<gamma_old.size(); l++){
+							weigthSum+=getWeigth(we, i+1, l, j)*gamma_old.get(l);
+						//	weigthSum+=web.get(i+1).line.get(l).weigth.get(j)*gamma_old.get(l);
+						}
+						//gamma_new.add(weigthSum*dF);
+						gamma_new.add(j, weigthSum*dF);
+					}
+				for(int k=0; k<web.get(i).layerNuronSize(j); k++){
+					double weigth=getWeigth(i, j, k);
+					double in;
+					if(k<web.get(i).layerNuronSize(j)-1){
+						in=web.get(i).line.get(j).input.get(k);
+					//	in=1;
+					/*	System.out.print(i);
+						System.out.print(" ");
+						System.out.print(j);
+						System.out.print(" ");
+						System.out.print(k);
+						System.out.print(" ");
+						System.out.println(in);*/
+						
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.get(j)*in);
+					}else{
+						in=1;
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.get(j)*in);
+					}
+					System.out.print(k);
+					System.out.print(" ");
+					System.out.print(weigth);
+					System.out.print(" ");
+					System.out.print(gamma_new.get(j));
+					System.out.print(" ");
+					
+					System.out.println(in);
+				}
+				
+			}
+			
+			gamma_old=new Vector<Double>(gamma_new);
+		//	gamma_new.clear();
+			
+			
+		}
+		
+		 
+		countError();
+	//	System.out.println(Double.toString(abberation)+"  "+Double.toString(abberationBlue)+"  "+Double.toString(abberationRed));
+	 }
+	/* System.out.println("");
+	 for(int x=0; x<web.size(); x++){
+			for(int y=0; y<web.get(x).line.size(); y++){
+				for(int z=0; z<web.get(x).layerNuronSize(y); z++){
+					System.out.print(web.get(x).line.get(y).weigth.get(z));
+				}
+			}
+		}
+	 System.out.println(" >>");*/
+}
+void grad(){
+	 Random randomGenerator = new Random();
+	
+	 if(clicsSec.size()>0 ){
+		 
+		 Vector<Vector<Vector<Double>>> we=new Vector<Vector<Vector<Double>>>();
+			
+			
+			for(int i=0; i<web.size(); i++){
+				we.add(web.get(i).getLayerWeigthsVectors());
+			}
+		 
+		 
+		Vector<Point3> select=new Vector<Point3>();
+		int size=(int)(clicsSec.size());
+		
 		for(int i=0; i<size; i++){
 			int w=Math.abs(randomGenerator.nextInt()% clicsSec.size());
 			Point3 point=new Point3(clics.get(w).x,clics.get(w).y,clicsSec.get(w).y);
@@ -208,48 +318,56 @@ void newMixup(){
 			}
 		}
 		
-		Point3 value=errorJ(select);
+			
+
+	
 		
-		double dJb =value.y;
-		double dJr =value.z;
-		System.out.println( dJb);
-		System.out.println( dJr);
-		double n=0.01;
-		Vector<Double> gamma_old=new Vector<Double>();
-		Vector<Double> gamma_new=new Vector<Double>();
-		gamma_new.add(dJb);
-		gamma_new.add(dJr);//pomnożyć razy pochodną
-		
-		for(int i=web.size()-1; i>=0; i--){
+		double n=1;
+		for(int i=0; i<web.size(); i++){
 			for(int j=0;j<web.get(i).size(); j++){
-				double dF=getdF(web.get(i).line.get(j));
-					if(i<web.size()-1){
-						double weigthSum=0.0;
-						for(int l=0; l<gamma_old.size(); l++){
-							weigthSum+=web.get(i+1).line.get(l).weigth.get(j)*gamma_old.get(l);
-						}
-						gamma_new.add(weigthSum*dF);
-					}
-				for(int k=0; k<web.get(i).layerNuronSize(j); k++){
+			
+				for(int k=0; k<web.get(i).layerNuronSize(j)-1; k++){
 					double weigth=getWeigth(i, j, k);
+					System.out.print(weigth);
+					System.out.print("  ");
+					//Point3 value=errorJ(select);
+					countError();
+					double J1=abberation;
+					//web.get(i).setLayerINeuronWeigthJ(j, k, (weigth+delta));
+					web.get(i).line.get(j).weigth.set(k, (weigth+delta));
+					System.out.print(web.get(i).line.get(j).weigth.get(k));
+					System.out.print("  ");
+					//value=errorJ(select);
+					countError();
+					double J2=abberation;
+					double dJ=(J2-J1)/delta;
+					System.out.print(J1);
+					System.out.print(" ");
+					System.out.print(J2);
+					System.out.print(" ");
+					System.out.println(dJ);
 					
-					if(k<web.get(i).layerNuronSize(j)-1){
-						double in=web.get(i).line.get(j).input.get(k);
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.get(j)*in);
-					}else{
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.lastElement()*1);
-					}
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*dJ);
 				}
 				
 			}
-			gamma_old=(Vector<Double>) gamma_new.clone();
-			gamma_new.clear();
+				
+			
 		}
 		
 		 
 		countError();
-		System.out.println(Double.toString(abberation)+"  "+Double.toString(abberationBlue)+"  "+Double.toString(abberationRed));
+	//	System.out.println(Double.toString(abberation)+"  "+Double.toString(abberationBlue)+"  "+Double.toString(abberationRed));
 	 }
+	/* System.out.println("");
+	 for(int x=0; x<web.size(); x++){
+			for(int y=0; y<web.get(x).line.size(); y++){
+				for(int z=0; z<web.get(x).layerNuronSize(y); z++){
+					System.out.print(web.get(x).line.get(y).weigth.get(z));
+				}
+			}
+		}
+	 System.out.println(" >>");*/
 }
 
 
