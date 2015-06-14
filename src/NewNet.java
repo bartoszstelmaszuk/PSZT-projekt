@@ -153,8 +153,8 @@ Point3 errorJ(Vector<Point3> point){
 	Point3 ret=new Point3(0.0,0.0,0.0);
 	for(int i=0; i<point.size(); i++){
 		Point3 value=getY((int)point.get(i).x);
-		ret.y+=point.get(i).y-value.x;
-		ret.z+=point.get(i).z-value.y;
+		ret.y+=(point.get(i).y-value.x);
+		ret.z+=(point.get(i).z-value.y);
 	}
 	return ret;
 }
@@ -196,7 +196,8 @@ void newMixup(){
 		 
 		 
 		Vector<Point3> select=new Vector<Point3>();
-		int size=(int)(clicsSec.size()*0.7);
+		//int size=(int)(clicsSec.size()*0.7);
+		int size=1;
 		for(int i=0; i<size; i++){
 			int w=Math.abs(randomGenerator.nextInt()% clicsSec.size());
 			Point3 point=new Point3(clics.get(w).x,clics.get(w).y,clicsSec.get(w).y);
@@ -211,6 +212,8 @@ void newMixup(){
 		
 		double dJb =value.y;
 		double dJr =value.z;
+		System.out.println( dJb);
+		System.out.println( dJr);
 		double n=0.01;
 		Vector<Double> gamma_old=new Vector<Double>();
 		Vector<Double> gamma_new=new Vector<Double>();
@@ -225,26 +228,16 @@ void newMixup(){
 						for(int l=0; l<gamma_old.size(); l++){
 							weigthSum+=web.get(i+1).line.get(l).weigth.get(j)*gamma_old.get(l);
 						}
-<<<<<<< HEAD
-						gamma_new.add(weigthSum*dF);//pomnożyć przez pochodną
-=======
 						gamma_new.add(weigthSum*dF);
->>>>>>> 6ae1bed5398322dd17fd962c5c05edb29d01c8d9
 					}
 				for(int k=0; k<web.get(i).layerNuronSize(j); k++){
 					double weigth=getWeigth(i, j, k);
 					
 					if(k<web.get(i).layerNuronSize(j)-1){
 						double in=web.get(i).line.get(j).input.get(k);
-<<<<<<< HEAD
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.lastElement()*in);
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.get(j)*in);
 					}else{
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.get(j)*1);
-=======
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*gamma_new.lastElement()*in);
-					}else{
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*gamma_new.lastElement()*1);
->>>>>>> 6ae1bed5398322dd17fd962c5c05edb29d01c8d9
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.lastElement()*1);
 					}
 				}
 				
