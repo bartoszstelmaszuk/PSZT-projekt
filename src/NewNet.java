@@ -14,16 +14,6 @@ public class NewNet implements Runnable{
 		private double  delta=0.05;
 		private double del=0.05;
 
-/*NewNet(){
-	web=new Vector<Layer>();
-	web.add(new Layer(20, 1));
-	web.add(new Layer(20, 20));
-	web.add(new Layer(1, 20));
-	abberation=0.0;
-	avr_abberation=0.0;
-	
-	clics= new Vector<Point3>();
-}*/
 		
 NewNet(Vector<Integer> layerDescr, Vector<Point3> cl, Vector<Point3> cr){
 	web=new Vector<Layer>();
@@ -61,6 +51,7 @@ public synchronized Vector<Point3> getAprksymation(int length, int step, int var
 		}else if(var==2){
 			newMixup();
 		//	mixup();
+		//	backProps();
 		}
 		
 		return line;
@@ -149,12 +140,23 @@ double getWeigth(Vector<Vector<Vector<Double>>> we, int a, int b, int c){
 	}
 }
 
-double deltaJ(Point3 point){
-	double value=0.0;
-	Point3 pointA=getY((int)point.x);
-	Point3 pointB=getY((int)(point.x+delta));
-	value = (pointB.y-point.y)-(pointA.y-point.y)+(pointB.z-point.z)-(pointA.z-point.z);
-	return value;
+double getWeigth(int a, int b, int c){
+	if(a<web.size()&&b<web.get(a).line.size()&&c<web.get(a).line.get(b).weigth.size()){
+		return web.get(a).line.get(b).weigth.get(c);
+	}else{
+		System.out.println("Error in getWeigth");
+		return 0.0;
+	}
+}
+
+Point3 errorJ(Vector<Point3> point){
+	Point3 ret=new Point3(0.0,0.0,0.0);
+	for(int i=0; i<point.size(); i++){
+		Point3 value=getY((int)point.get(i).x);
+		ret.y+=point.get(i).y-value.x;
+		ret.z+=point.get(i).z-value.y;
+	}
+	return ret;
 }
 double getF(Neuron x){
 	return x.output;
@@ -162,25 +164,58 @@ double getF(Neuron x){
 double getdF(Neuron x){
 	return (getF(x)*(1-getF(x)));
 }
-void newMixup(){
-	 Random randomGenerator = new Random();
-	
+void backProps(){
+	Vector<Double> gamma_old=new Vector<Double>();
+	Vector<Double> gamma_new=new Vector<Double>();
+	Random randomGenerator = new Random();
+		
 	 if(clicsSec.size()>0 ){
 		 int w=Math.abs(randomGenerator.nextInt()% clicsSec.size());
 		
 		Point3 point=new Point3(clics.get(w).x,clics.get(w).y,clicsSec.get(w).y);
-		getY((int)point.x);
+		Point3 value=getY((int)point.x);
 		Vector<Vector<Vector<Double>>> we=new Vector<Vector<Vector<Double>>>();
 		for(int i=0; i<web.size(); i++){
 			we.add(web.get(i).getLayerWeigthsVectors());
 		}
-		countError();
-		double dJ =abberation;
-		double n=0.000001;
+		double dJb =point.y-value.y;
+		double dJr =point.z-value.z;
+	 }
+}
+void newMixup(){
+	 Random randomGenerator = new Random();
+	
+	 if(clicsSec.size()>0 ){
+		 
+		 Vector<Vector<Vector<Double>>> we=new Vector<Vector<Vector<Double>>>();
+			
+			
+			for(int i=0; i<web.size(); i++){
+				we.add(web.get(i).getLayerWeigthsVectors());
+			}
+		 
+		 
+		Vector<Point3> select=new Vector<Point3>();
+		int size=(int)(clicsSec.size()*0.7);
+		for(int i=0; i<size; i++){
+			int w=Math.abs(randomGenerator.nextInt()% clicsSec.size());
+			Point3 point=new Point3(clics.get(w).x,clics.get(w).y,clicsSec.get(w).y);
+			if(select.contains(point)){
+				i--;
+			}else{
+				select.add(point);
+			}
+		}
+		
+		Point3 value=errorJ(select);
+		
+		double dJb =value.y;
+		double dJr =value.z;
+		double n=0.01;
 		Vector<Double> gamma_old=new Vector<Double>();
 		Vector<Double> gamma_new=new Vector<Double>();
-		gamma_new.add(abberationBlue);
-		gamma_new.add(abberationRed);
+		gamma_new.add(dJb);
+		gamma_new.add(dJr);//pomnożyć razy pochodną
 		
 		for(int i=web.size()-1; i>=0; i--){
 			for(int j=0;j<web.get(i).size(); j++){
@@ -190,16 +225,26 @@ void newMixup(){
 						for(int l=0; l<gamma_old.size(); l++){
 							weigthSum+=web.get(i+1).line.get(l).weigth.get(j)*gamma_old.get(l);
 						}
+<<<<<<< HEAD
+						gamma_new.add(weigthSum*dF);//pomnożyć przez pochodną
+=======
 						gamma_new.add(weigthSum*dF);
+>>>>>>> 6ae1bed5398322dd17fd962c5c05edb29d01c8d9
 					}
 				for(int k=0; k<web.get(i).layerNuronSize(j); k++){
-					double weigth=getWeigth(we, i, j, k);
+					double weigth=getWeigth(i, j, k);
 					
 					if(k<web.get(i).layerNuronSize(j)-1){
 						double in=web.get(i).line.get(j).input.get(k);
+<<<<<<< HEAD
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.lastElement()*in);
+					}else{
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*gamma_new.get(j)*1);
+=======
 						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*gamma_new.lastElement()*in);
 					}else{
 						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*gamma_new.lastElement()*1);
+>>>>>>> 6ae1bed5398322dd17fd962c5c05edb29d01c8d9
 					}
 				}
 				

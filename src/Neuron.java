@@ -22,7 +22,7 @@ public class Neuron {
 		activation=0;
 	}
 	private void calculate_output(){
-		output= (700/(1+ Math.pow(Math.E,-activation/1000)));
+		output= (1/(1+ Math.pow(Math.E,-activation)));
 		
 	}
 	private void calulate_activation(Vector<Double> in){
