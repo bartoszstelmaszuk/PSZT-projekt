@@ -11,8 +11,9 @@ public class NewNet implements Runnable{
 		double avr_abberation;
 		private Vector<Point3> clics;
 		private Vector<Point3> clicsSec;
-		private double  delta=0.01;
+		private double  delta=0.1;
 		private double del=0.1;
+		private double J1;
 
 		
 NewNet(Vector<Integer> layerDescr, Vector<Point3> cl, Vector<Point3> cr){
@@ -25,6 +26,7 @@ NewNet(Vector<Integer> layerDescr, Vector<Point3> cl, Vector<Point3> cr){
 	
 	clics= cl;
 	clicsSec=cr;
+	J1=0.0;
 }		
 NewNet(Vector<Point3> cl, Vector<Point3> cr){
 	web=new Vector<Layer>();
@@ -50,8 +52,8 @@ public synchronized Vector<Point3> getAprksymation(int length, int step, int var
 			}
 		}else if(var==2){
 		//	newMixup();
-			mixup();
-		//grad();
+		//	mixup();
+		    grad();
 		}
 		
 		return line;
@@ -84,8 +86,8 @@ Point3 getY(int x){
 			}
 			
 			
-				out=web.lastElement().calulateLayer(in);
-				//out=web.lastElement().calulateLayerLinear(in);
+				//out=web.lastElement().calulateLayer(in);
+				out=web.lastElement().calulateLayerLinear(in);
 				double sumaY1=0;
 				double sumaY2=0;
 				if(out.size()==2){
@@ -153,14 +155,15 @@ double getWeigth(int a, int b, int c){
 Point3 errorJ(Vector<Point3> point){
 	Point3 ret=new Point3(0.0,0.0,0.0);
 	for(int i=0; i<point.size(); i++){
-		Point3 value=getY((int)point.get(i).x);
+		Point3 value=new Point3( getY((int)point.get(i).x));
 		
 	//	ret.y+=(point.get(i).y-value.x);
 	//	ret.z+=(point.get(i).z-value.y);
-		ret.y+=(point.get(i).y-value.x)*(point.get(i).y-value.x);
-		ret.z+=(point.get(i).z-value.y)*(point.get(i).z-value.y);
+		ret.y+=Math.abs(point.get(i).y-value.x);
+		ret.z+=Math.abs(point.get(i).z-value.y);
 	}
-	ret.x=ret.y+ret.z;
+	ret.x=(ret.y+ret.z)/(point.size());
+	
 	return ret;
 }
 double getF(Neuron x){
@@ -306,48 +309,52 @@ void grad(){
 		 
 		 
 		Vector<Point3> select=new Vector<Point3>();
-		int size=(int)(clicsSec.size());
+		int size=(int)(Math.abs(randomGenerator.nextInt()%(clicsSec.size()*0.8)));
+		if(size<5) size=5;
 		
+		//size=clicsSec.size();
 		for(int i=0; i<size; i++){
 			int w=Math.abs(randomGenerator.nextInt()% clicsSec.size());
+			System.out.print(w);
 			Point3 point=new Point3(clics.get(w).x,clics.get(w).y,clicsSec.get(w).y);
-			if(select.contains(point)){
-				i--;
-			}else{
+		//	if(select.contains(point)){
+		//		i--;
+		//	}else{
 				select.add(point);
-			}
+		//	}
 		}
 		
 			
 
-	
+		Point3 value;
 		
-		double n=1;
+		double n=0.1/clicsSec.size();
+		
 		for(int i=0; i<web.size(); i++){
 			for(int j=0;j<web.get(i).size(); j++){
 			
-				for(int k=0; k<web.get(i).layerNuronSize(j)-1; k++){
+			for(int k=0; k<web.get(i).layerNuronSize(j)-1; k++){
+		/*	int i=Math.abs(randomGenerator.nextInt()%web.size());
+		int j=Math.abs(randomGenerator.nextInt()%web.get(i).size());
+		int k=Math.abs(randomGenerator.nextInt()%(web.get(i).layerNuronSize(j)-1));
+		{{{*/
 					double weigth=getWeigth(i, j, k);
-					System.out.print(weigth);
-					System.out.print("  ");
-					//Point3 value=errorJ(select);
-					countError();
-					double J1=abberation;
+					
+					
+					//countError();
+					value=new Point3(errorJ(select));
+					J1=value.x;
 					//web.get(i).setLayerINeuronWeigthJ(j, k, (weigth+delta));
 					web.get(i).line.get(j).weigth.set(k, (weigth+delta));
-					System.out.print(web.get(i).line.get(j).weigth.get(k));
-					System.out.print("  ");
-					//value=errorJ(select);
-					countError();
-					double J2=abberation;
-					double dJ=(J2-J1)/delta;
-					System.out.print(J1);
-					System.out.print(" ");
-					System.out.print(J2);
-					System.out.print(" ");
-					System.out.println(dJ);
+				
+					value=new Point3(errorJ(select));
+					//countError();
+					double J2=value.x;
+					double dJ=(J2-J1)/Math.abs((J2-J1));
+				
 					
-						web.get(i).setLayerINeuronWeigthJ(j, k, weigth+n*dJ);
+						web.get(i).setLayerINeuronWeigthJ(j, k, weigth-n*dJ);
+						J1=J2;
 				}
 				
 			}
